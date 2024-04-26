@@ -1,6 +1,13 @@
 def load_english_options():
+    def format_tens(data, bases, x: str):
+        # Ingores 11-19
+        if bases[1][0] != 0:
+            x = x.replace(" ", "-")
+        
+        return x.strip()
+    
     return {
-        "format_tens": lambda x: x.replace(" ", "-")
+        "format_tens": format_tens
     }
 
 def load_french_options():
@@ -17,7 +24,10 @@ def load_french_options():
         digit, base = base_tup
 
         if digit > 1:
-            x = x.replace(data[base], data[base] + "s")
+            base_str = x.split(" ")[-1]
+            x = x.replace(base_str, base_str + "s")
+        else:
+            x = x.replace("un ", "")
 
         return x
     

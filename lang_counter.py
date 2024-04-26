@@ -3,9 +3,10 @@ import json
 from options import *
 
 class LangCounter:
-    def __init__(self, language: str, options: dict = {}):
+    def __init__(self, language: str, options: dict = {}, delim: str = ","):
         self.language = language
         self.options = options
+        self.delim = delim
         self.data = self.load_language_data()
 
         if options == {}:
@@ -52,32 +53,32 @@ class LangCounter:
                 result = ""
 
                 distance = base // real_base
-                add_comma = i < non_zero_bases_count
+                add_delim = i < non_zero_bases_count
                 original_i = i
+
+                middle = f" {DATA[10**(offset - 2)]} " if offset > 2 else " "
                 if distance == 100:
-                    middle = f" {DATA[10**offset]} " if offset < 2 else " "
                     result += self.wordify(n[i:i+3]) + middle + DATA[real_base]
                     i += 3
                 elif distance == 10:
-                    middle = f" {DATA[10**offset]} " if offset > 1 else " "
                     result += self.wordify(n[i:i+2]) + middle + DATA[real_base]
                     i += 2
                 else:
-                    middle = f" {DATA[10**offset]} " if offset > 0 else " "
+                    middle += " "
                     result += DATA[digit] + middle + DATA[real_base] 
                     i += 1
 
                 if self.options.get("format_large"):
                     result = self.options["format_large"](self.data, bases[original_i], result)
                 output += result 
-                if add_comma:
-                    output += ", "
+                if add_delim:
+                    output += f"{self.delim} "
 
                 continue;
             
             # 000_000
             if len(n) - i - 3 >= 3:
-                output += self.wordify(n[i:i+3]) + f" {DATA[1000]}, "
+                output += self.wordify(n[i:i+3]) + f" {DATA[1000]}{self.delim} "
                 i += 3; continue
 
             # 00_000
@@ -87,6 +88,7 @@ class LangCounter:
 
             # 00
             if len(bases) - i == 2:
+                
                 output += self.parse_tens(n, bases[i], bases[i + 1], i)
                 break
             
@@ -105,11 +107,9 @@ class LangCounter:
         digit, base = base_tup
 
         if digit == 1 and base != 1: 
-            temp += self.data[1] + " " + self.data[base] + " "
+            temp += self.data[1] + " " + self.data[base]
         else: 
-            temp += self.data[digit] + " "
-            if base != 1:
-                temp += self.data[base] + " "
+            temp += self.data[digit] + (f" {self.data[base]} " if base > 1 else "")
 
         return temp
     
@@ -125,7 +125,8 @@ class LangCounter:
                 temp += self.data[next_base_tup[0]]
 
         if self.options.get("format_tens", False):
-            temp = self.options["format_tens"](self.data, [base_tup, next_base_tup], temp)
+            temp =  self.options["format_tens"](self.data, [base_tup, next_base_tup], temp)
+
         return temp
     
     def parse_ten_thousands(self, n: str, base_tup, next_base_tup, i):
@@ -139,7 +140,7 @@ class LangCounter:
             if next_base_tup[0] != 0:
                 temp += " " + self.data[next_base_tup[0]]
         
-        temp += f" {self.data[1000]}, "
+        temp += f" {self.data[1000]}{self.delim} "
         return temp
     
     def find_closest_base(self, b: int):
@@ -150,6 +151,6 @@ class LangCounter:
             b = b // 10
             i += 1
 
-english_counter = LangCounter("french", {})
-result = english_counter.wordify("124150478")
+english_counter = LangCounter("french", {}, delim=";")
+result = english_counter.wordify("21842345")
 print(result)
