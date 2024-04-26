@@ -1,10 +1,10 @@
 def load_english_options():
     def format_tens(data, bases, x: str):
+        x = x.strip()
         # Ingores 11-19
         if bases[1][0] != 0:
             x = x.replace(" ", "-")
-        
-        return x.strip()
+        return x
     
     return {
         "format_tens": format_tens

@@ -21,7 +21,13 @@ class LangCounter:
         if func_name in globals():
             self.options = globals()[func_name]()
 
-    def wordify(self, n: str):
+    def wordify(self, n: str | int):
+        try:
+            return self._parse(str(n))
+        except Exception as e:
+            raise e
+
+    def _parse(self, n: str):
         DATA = self.data
         output = ""
         
@@ -53,32 +59,32 @@ class LangCounter:
                 result = ""
 
                 distance = base // real_base
-                add_delim = i < non_zero_bases_count
                 original_i = i
 
                 middle = f" {DATA[10**(offset - 2)]} " if offset > 2 else " "
                 if distance == 100:
-                    result += self.wordify(n[i:i+3]) + middle + DATA[real_base]
+                    result += self._parse(n[i:i+3]) + middle + DATA[real_base]
                     i += 3
                 elif distance == 10:
-                    result += self.wordify(n[i:i+2]) + middle + DATA[real_base]
+                    result += self._parse(n[i:i+2]) + middle + DATA[real_base]
                     i += 2
                 else:
-                    middle += " "
                     result += DATA[digit] + middle + DATA[real_base] 
                     i += 1
 
                 if self.options.get("format_large"):
                     result = self.options["format_large"](self.data, bases[original_i], result)
-                output += result 
+                output += result
+
+                add_delim = i < non_zero_bases_count
                 if add_delim:
                     output += f"{self.delim} "
-
+                
                 continue;
             
             # 000_000
             if len(n) - i - 3 >= 3:
-                output += self.wordify(n[i:i+3]) + f" {DATA[1000]}{self.delim} "
+                output += self._parse(n[i:i+3]) + f" {DATA[1000]}"
                 i += 3; continue
 
             # 00_000
@@ -88,18 +94,17 @@ class LangCounter:
 
             # 00
             if len(bases) - i == 2:
-                
                 output += self.parse_tens(n, bases[i], bases[i + 1], i)
                 break
             
             # 0
-            else: output += self.parse_ones(bases[i])
+            else: output += self.parse_ones(bases[i]) + " "
                 
 
             i += 1
 
         if n_float is not None:
-            output += "point " + self.wordify(n_float)
+            output += "point " + self._parse(n_float)
         return output
     
     def parse_ones(self, base_tup):
@@ -111,7 +116,7 @@ class LangCounter:
         else: 
             temp += self.data[digit] + (f" {self.data[base]} " if base > 1 else "")
 
-        return temp
+        return temp.strip()
     
     def parse_tens(self, n: str, base_tup, next_base_tup, i):
         temp = ""
@@ -140,7 +145,7 @@ class LangCounter:
             if next_base_tup[0] != 0:
                 temp += " " + self.data[next_base_tup[0]]
         
-        temp += f" {self.data[1000]}{self.delim} "
+        temp += f" {self.data[1000]} "
         return temp
     
     def find_closest_base(self, b: int):
@@ -151,6 +156,6 @@ class LangCounter:
             b = b // 10
             i += 1
 
-english_counter = LangCounter("french", {}, delim=";")
-result = english_counter.wordify("21842345")
+counter = LangCounter("english", {}, delim=",")
+result = counter.wordify("1370000")
 print(result)
