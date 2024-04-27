@@ -61,12 +61,12 @@ class LangCounter:
                 distance = base // real_base
                 original_i = i
 
-                middle = f" {DATA[10**(offset - 2)]} " if offset > 2 else " "
+                middle = f"{DATA[10**(offset - 2)]} " if offset > 2 else " "
                 if distance == 100:
-                    result += self._parse(n[i:i+3]) + middle + DATA[real_base]
+                    result += self._parse(n[i:i+3]).strip() + middle + DATA[real_base]
                     i += 3
                 elif distance == 10:
-                    result += self._parse(n[i:i+2]) + middle + DATA[real_base]
+                    result += self._parse(n[i:i+2]).strip() + middle + DATA[real_base]
                     i += 2
                 else:
                     result += DATA[digit] + middle + DATA[real_base] 
@@ -84,17 +84,17 @@ class LangCounter:
             
             # 000_000
             if len(n) - i - 3 >= 3:
-                output += self._parse(n[i:i+3]) + f" {DATA[1000]}"
+                output += self._parse(n[i:i+3]) + f"{DATA[1000]} "
                 i += 3; continue
 
             # 00_000
             if len(n) - i - 3 >= 2:
-                output += self.parse_ten_thousands(n, bases[i], bases[i + 1], i)
+                output += self.parse_ten_thousands(n, bases[i], bases[i + 1], i) + " "
                 i += 2; continue
 
             # 00
             if len(bases) - i == 2:
-                output += self.parse_tens(n, bases[i], bases[i + 1], i)
+                output += self.parse_tens(n, bases[i], bases[i + 1], i) + " "
                 break
             
             # 0
@@ -104,7 +104,7 @@ class LangCounter:
             i += 1
 
         if n_float is not None:
-            output += "point " + self._parse(n_float)
+            output += f"<.> " + self._parse(n_float)
         return output
     
     def parse_ones(self, base_tup):
@@ -123,7 +123,7 @@ class LangCounter:
         sub = int(n[i: i + 2])
         digit, base = base_tup
         if self.data.get(sub, False):
-            temp += self.data[sub] + " "
+            temp += self.data[sub]
         else:
             temp += self.data[digit * base] + " "
             if(next_base_tup[0] != 0):
@@ -145,7 +145,7 @@ class LangCounter:
             if next_base_tup[0] != 0:
                 temp += " " + self.data[next_base_tup[0]]
         
-        temp += f" {self.data[1000]} "
+        temp += f" {self.data[1000]}"
         return temp
     
     def find_closest_base(self, b: int):
@@ -156,6 +156,6 @@ class LangCounter:
             b = b // 10
             i += 1
 
-counter = LangCounter("english", {}, delim=",")
-result = counter.wordify("1370000")
+counter = LangCounter("russian", {}, delim=",")
+result = counter.wordify("5.4")
 print(result)
